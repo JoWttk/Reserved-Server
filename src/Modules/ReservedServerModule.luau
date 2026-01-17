@@ -1,9 +1,12 @@
 local ReservedServerModule = {}
+
 local Config = require(script.Parent:WaitForChild("Config"))
 local UI = script.Parent.Parent:WaitForChild("UI")
+
 local Teleport = game:GetService("TeleportService")
-local Data = game:GetService("DataStoreService")
-local Store = Data:GetDataStore("ReservedServer")
+local Memory = game:GetService("MemoryStoreService")
+local Store = Memory:GetSortedMap("ReservedServer")
+
 local PLACE_ID = game.PlaceId
 local EXPIRATION_TIME = 4 * 60 * 60
 
@@ -18,7 +21,7 @@ function ReservedServerModule.Create(Player: Player)
 	local Main = CreateTrainingUI.Main
 
 	Main.Generate.MouseButton1Click:Connect(function()
-		local RandomCode = tostring(math.random(100, 9999))
+		local RandomCode = tostring(math.random(1000, 9999))
 		Main.Generate.Visible = false
 		Main.Ok.Visible = true
 		Main.Code.Text = RandomCode
@@ -29,15 +32,9 @@ function ReservedServerModule.Create(Player: Player)
 			end)
 
 			if success then
-				local saveSuccess, saveError = pcall(function()
-					local options = Instance.new("DataStoreSetOptions")
-					options:SetMetadata({ExpireTime = os.time() + EXPIRATION_TIME})
-					Store:SetAsync("CODE_" .. RandomCode, serverId, nil, options)
+				pcall(function()
+					Store:SetAsync("CODE_" .. RandomCode, serverId, EXPIRATION_TIME)
 				end)
-
-				if not saveSuccess then
-					warn("Erro ao salvar código:", saveError)
-				end
 			else
 				warn("Erro ao reservar servidor:", serverId)
 			end

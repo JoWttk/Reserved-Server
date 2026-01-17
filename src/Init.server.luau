@@ -10,11 +10,10 @@ ProximityPromptService.PromptTriggered:Connect(function(prompt, player)
 	end
 end)
 
--- improvisado
-
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Teleport = game:GetService("TeleportService")
-local Store = game:GetService("DataStoreService"):GetDataStore("ReservedServer")
+local Memory = game:GetService("MemoryStoreService")
+local Store = Memory:GetSortedMap("ReservedServer")
 
 local TeleportEvent = Instance.new("RemoteEvent")
 TeleportEvent.Name = "TeleportToReserved"
@@ -25,11 +24,13 @@ ErrorEvent.Name = "TeleportError"
 ErrorEvent.Parent = ReplicatedStorage
 
 TeleportEvent.OnServerEvent:Connect(function(player, code)
-	local serverId = Store:GetAsync("CODE_" .. tostring(code))
+	local success, serverId = pcall(function()
+		return Store:GetAsync("CODE_" .. tostring(code))
+	end)
 
-	if serverId and type(serverId) == "string" then
+	if success and serverId then
 		Teleport:TeleportToPrivateServer(game.PlaceId, serverId, {player})
 	else
-		ErrorEvent:FireClient(player, "C�digo Inv�lido")
+		ErrorEvent:FireClient(player, "Código Inválido")
 	end
 end)

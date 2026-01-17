@@ -1,7 +1,6 @@
 local Config={}
 
 Config.Cooldown = 600
-Config.PlaceId = game.PlaceId
 
 function Config.CheckRanks(Player:Player)
 	local Rank = Player.leaderstats.Rank
